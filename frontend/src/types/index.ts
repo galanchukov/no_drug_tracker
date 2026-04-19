@@ -3,6 +3,8 @@ export interface UserProfile {
   username: string;
   createdAt: any;
   achievements: string[];
+  xp: number;
+  level: number;
 }
 
 export interface Habit {
@@ -14,6 +16,10 @@ export interface Habit {
   currentStreak?: number; // Calculated on client side dynamically or fetched
   bestStreak: number;
   totalRelapses: number;
+  color?: string;
+  icon?: string;
+  reason?: string;
+  dailyCost?: number;
 }
 
 export interface Relapse {
@@ -30,6 +36,7 @@ export interface MoodEntry {
   mood: number; // 1-5
   comment: string;
   date: any;
+  tags?: string[];
 }
 
 export interface ActivityLog {

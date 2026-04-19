@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { signInAnonymously } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { ListTodo, BookOpen, Activity, LoaderCircle } from "lucide-react";
+import { ListTodo, BookOpen, LoaderCircle, TrendingUp, UserRound } from "lucide-react";
 import { auth, db } from "./api/firebase";
 import { useAppStore } from "./store/useAppStore";
 import "./index.css";
@@ -12,6 +12,8 @@ import Home from "./pages/Home";
 import HabitDetail from "./pages/HabitDetail";
 import Diary from "./pages/Diary";
 import Logs from "./pages/Logs";
+import Stats from "./pages/Stats";
+import Profile from "./pages/Profile";
 
 const tg = window.Telegram?.WebApp;
 
@@ -22,15 +24,19 @@ function BottomNav() {
     <nav className="bottom-nav">
       <Link to="/" className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
         <ListTodo size={24} />
-        <span>Привычки</span>
+        <span>Цели</span>
+      </Link>
+      <Link to="/stats" className={`nav-item ${location.pathname === '/stats' ? 'active' : ''}`}>
+        <TrendingUp size={24} />
+        <span>Стата</span>
       </Link>
       <Link to="/diary" className={`nav-item ${location.pathname === '/diary' ? 'active' : ''}`}>
         <BookOpen size={24} />
         <span>Дневник</span>
       </Link>
-      <Link to="/logs" className={`nav-item ${location.pathname === '/logs' ? 'active' : ''}`}>
-        <Activity size={24} />
-        <span>Срывы</span>
+      <Link to="/profile" className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}>
+        <UserRound size={24} />
+        <span>Профиль</span>
       </Link>
     </nav>
   );
@@ -67,7 +73,9 @@ function App() {
             uid: targetUid,
             username: targetUsername,
             createdAt: serverTimestamp(),
-            achievements: []
+            achievements: [],
+            xp: 0,
+            level: 1,
           });
         }
         
@@ -75,7 +83,9 @@ function App() {
           uid: targetUid,
           username: targetUsername,
           createdAt: new Date(),
-          achievements: []
+          achievements: [],
+          xp: 0,
+          level: 1,
         });
 
       } catch (error) {
@@ -99,20 +109,26 @@ function App() {
                uid: docSnap.data().uid,
                username: docSnap.data().username,
                createdAt: docSnap.data().createdAt,
-               achievements: docSnap.data().achievements || []
+               achievements: docSnap.data().achievements || [],
+               xp: docSnap.data().xp || 0,
+               level: docSnap.data().level || 1,
              });
           } else {
              await setDoc(doc(db, "users", targetUid), {
                 uid: targetUid,
                 username: targetUsername,
                 createdAt: serverTimestamp(),
-                achievements: []
+                achievements: [],
+                xp: 0,
+                level: 1,
              });
              setUser({
                uid: targetUid,
                username: targetUsername,
                createdAt: new Date(),
-               achievements: []
+               achievements: [],
+               xp: 0,
+               level: 1,
              });
           }
           setLoading(false);
@@ -141,6 +157,8 @@ function App() {
           <Route path="/habit/:habitId" element={<HabitDetail />} />
           <Route path="/diary" element={<Diary />} />
           <Route path="/logs" element={<Logs />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
       <BottomNav />
