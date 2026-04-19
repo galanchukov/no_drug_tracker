@@ -16,12 +16,16 @@ export default function Diary() {
     if (!user) return;
     const q = query(
       collection(db, "mood_entries"), 
-      where("userId", "==", user.uid),
-      orderBy("date", "desc")
+      where("userId", "==", user.uid)
     );
     const unsub = onSnapshot(q, (snapshot) => {
       const data: MoodEntry[] = [];
       snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() } as MoodEntry));
+      data.sort((a, b) => {
+        const timeA = a.date?.toMillis ? a.date.toMillis() : Date.now();
+        const timeB = b.date?.toMillis ? b.date.toMillis() : Date.now();
+        return timeB - timeA;
+      });
       setEntries(data);
     });
     return () => unsub();
