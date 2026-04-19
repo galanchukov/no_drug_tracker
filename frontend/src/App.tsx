@@ -54,16 +54,17 @@ function App() {
     const authenticate = async () => {
       try {
         const cred = await signInAnonymously(auth);
-        const uid = cred.user.uid;
+        const fbUid = cred.user.uid;
         
         let targetUsername = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Аноним";
+        let targetUid = tg?.initDataUnsafe?.user?.id?.toString() || fbUid;
 
-        const userRef = doc(db, "users", uid);
+        const userRef = doc(db, "users", targetUid);
         const userDoc = await getDoc(userRef);
 
         if (!userDoc.exists()) {
           await setDoc(userRef, {
-            uid: uid,
+            uid: targetUid,
             username: targetUsername,
             createdAt: serverTimestamp(),
             achievements: []
@@ -71,7 +72,7 @@ function App() {
         }
         
         setUser({
-          uid: uid,
+          uid: targetUid,
           username: targetUsername,
           createdAt: new Date(),
           achievements: []
@@ -88,7 +89,11 @@ function App() {
       if (!userAuth) {
         authenticate();
       } else {
-        getDoc(doc(db, "users", userAuth.uid)).then(async docSnap => {
+        const fbUid = userAuth.uid;
+        let targetUid = tg?.initDataUnsafe?.user?.id?.toString() || fbUid;
+        let targetUsername = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Аноним";
+
+        getDoc(doc(db, "users", targetUid)).then(async docSnap => {
           if (docSnap.exists()) {
              setUser({
                uid: docSnap.data().uid,
@@ -97,15 +102,14 @@ function App() {
                achievements: docSnap.data().achievements || []
              });
           } else {
-             let targetUsername = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Аноним";
-             await setDoc(doc(db, "users", userAuth.uid), {
-                uid: userAuth.uid,
+             await setDoc(doc(db, "users", targetUid), {
+                uid: targetUid,
                 username: targetUsername,
                 createdAt: serverTimestamp(),
                 achievements: []
              });
              setUser({
-               uid: userAuth.uid,
+               uid: targetUid,
                username: targetUsername,
                createdAt: new Date(),
                achievements: []
