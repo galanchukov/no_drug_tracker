@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, onSnapshot, runTransaction, collection, serverTimestamp } from "firebase/firestore";
+import { doc, onSnapshot, runTransaction, collection, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { db } from "../api/firebase";
 import { useAppStore } from "../store/useAppStore";
 import type { Habit } from "../types";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Trash2 } from "lucide-react";
 
 export default function HabitDetail() {
   const { user } = useAppStore();
@@ -12,6 +12,7 @@ export default function HabitDetail() {
   const navigate = useNavigate();
   const [habit, setHabit] = useState<Habit | null>(null);
   const [isRelapsing, setIsRelapsing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [reason, setReason] = useState("");
 
   useEffect(() => {
@@ -19,10 +20,32 @@ export default function HabitDetail() {
     const unsub = onSnapshot(doc(db, "habits", habitId), (docSnap) => {
       if (docSnap.exists()) {
         setHabit({ id: docSnap.id, ...docSnap.data() } as Habit);
+      } else {
+        // If it got deleted, navigate back
+        navigate('/', { replace: true });
       }
     });
     return () => unsub();
-  }, [habitId]);
+  }, [habitId, navigate]);
+
+  const handleDeleteHabit = async () => {
+    if (!user || !habitId) return;
+    window.Telegram?.WebApp.showConfirm("Вы уверены, что хотите удалить эту привычку? Это действие необратимо.", async (confirmed: boolean) => {
+      if (confirmed) {
+        setIsDeleting(true);
+        try {
+          // Delete logs/relapses optionally, but strictly deleting the habit doc is minimal viable approach
+          await deleteDoc(doc(db, "habits", habitId));
+          window.Telegram?.WebApp.showAlert("Привычка удалена.");
+          navigate('/', { replace: true });
+        } catch (e) {
+          console.error(e);
+          window.Telegram?.WebApp.showAlert("Ошибка при удалении");
+          setIsDeleting(false);
+        }
+      }
+    });
+  };
 
   const handleRelapse = async () => {
     if (!user || !habitId) return;
@@ -74,11 +97,21 @@ export default function HabitDetail() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
-        <button className="btn" style={{ width: 'auto', padding: '8px', background: 'transparent', color: 'var(--text-color)' }} onClick={() => navigate(-1)}>
-          <ArrowLeft size={24} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button className="btn" style={{ width: 'auto', padding: '8px', background: 'transparent', color: 'var(--text-color)' }} onClick={() => navigate(-1)}>
+            <ArrowLeft size={24} />
+          </button>
+          <h1 style={{ margin: 0 }}>{habit.title}</h1>
+        </div>
+        <button 
+          className="btn" 
+          disabled={isDeleting}
+          onClick={handleDeleteHabit}
+          style={{ width: 'auto', padding: '8px', background: 'transparent', color: '#ff4d4d' }}
+        >
+          <Trash2 size={24} />
         </button>
-        <h1 style={{ margin: 0 }}>{habit.title}</h1>
       </div>
 
       <div className="streak-circle">
