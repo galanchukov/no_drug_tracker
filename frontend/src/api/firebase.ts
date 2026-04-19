@@ -4,12 +4,12 @@ import { getFirestore } from "firebase/firestore";
 
 // Replace with actual config later via .env or directly
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo-project",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "demo-project.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1234:web:1234"
+  apiKey: "AIzaSyCKfl10QOneXDLoRltoibOWrWDfDC53uIQ",
+  authDomain: "kdl-inventory.firebaseapp.com",
+  projectId: "kdl-inventory",
+  storageBucket: "kdl-inventory.firebasestorage.app",
+  messagingSenderId: "34029969026",
+  appId: "1:34029969026:web:29c5f0b2a8a4c2918d5e9b"
 };
 
 export const app = initializeApp(firebaseConfig);
