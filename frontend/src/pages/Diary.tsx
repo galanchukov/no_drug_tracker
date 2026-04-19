@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../api/firebase";
 import { useAppStore } from "../store/useAppStore";
 import type { MoodEntry } from "../types";
