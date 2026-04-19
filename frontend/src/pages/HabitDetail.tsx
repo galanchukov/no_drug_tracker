@@ -26,7 +26,7 @@ export default function HabitDetail() {
 
   const handleRelapse = async () => {
     if (!user || !habitId) return;
-    window.Telegram?.WebApp.showConfirm("Are you sure you want to reset your streak?", async (confirmed: boolean) => {
+    window.Telegram?.WebApp.showConfirm("Вы уверены, что хотите сбросить текущий стрик?", async (confirmed: boolean) => {
       if (confirmed) {
         setIsRelapsing(true);
         try {
@@ -57,10 +57,10 @@ export default function HabitDetail() {
           });
 
           setReason("");
-          window.Telegram?.WebApp.showAlert("Streak reset. Keep your head up!");
+          window.Telegram?.WebApp.showAlert("Счетчик сброшен. Не сдавайтесь!");
         } catch (e) {
           console.error(e);
-          window.Telegram?.WebApp.showAlert("Error reporting relapse");
+          window.Telegram?.WebApp.showAlert("Ошибка при записи срыва");
         } finally {
           setIsRelapsing(false);
         }
@@ -68,7 +68,7 @@ export default function HabitDetail() {
     });
   };
 
-  if (!habit) return <p>Loading...</p>;
+  if (!habit) return <p>Загрузка...</p>;
 
   const currentStreak = Math.floor(Math.abs(new Date().getTime() - habit.startDate.toDate().getTime()) / (1000 * 60 * 60 * 24));
 
@@ -83,32 +83,32 @@ export default function HabitDetail() {
 
       <div className="streak-circle">
         <div className="number">{currentStreak}</div>
-        <div className="label">Days</div>
+        <div className="label">Дней</div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
         <div className="card" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '14px', color: 'var(--hint-color)', marginBottom: '8px' }}>Best Streak</div>
+          <div style={{ fontSize: '14px', color: 'var(--hint-color)', marginBottom: '8px' }}>Лучший стрик</div>
           <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{Math.max(habit.bestStreak, currentStreak)}</div>
         </div>
         <div className="card" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '14px', color: 'var(--hint-color)', marginBottom: '8px' }}>Total Relapses</div>
+          <div style={{ fontSize: '14px', color: 'var(--hint-color)', marginBottom: '8px' }}>Всего срывов</div>
           <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{habit.totalRelapses}</div>
         </div>
       </div>
 
       <div className="card">
-        <h2>Report Relapse</h2>
-        <p style={{ marginBottom: '16px' }}>If you slipped up, record it here to start fresh and track what triggered it.</p>
+        <h2>Зафиксировать срыв</h2>
+        <p style={{ marginBottom: '16px' }}>Если вы сорвались, запишите это, чтобы начать заново и отследить причины.</p>
         <textarea 
-          placeholder="What triggered this? (optional)" 
+          placeholder="Что спровоцировало срыв? (необязательно)" 
           rows={3} 
           value={reason}
           onChange={(e) => setReason(e.target.value)}
         />
         <button className="btn danger" onClick={handleRelapse} disabled={isRelapsing}>
           <AlertTriangle size={20} style={{ marginRight: '8px' }}/>
-          I Slipped Up
+          Я сорвался
         </button>
       </div>
     </div>

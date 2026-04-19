@@ -41,7 +41,7 @@ export default function Diary() {
       setMood(3);
     } catch (e) {
       console.error(e);
-      window.Telegram?.WebApp.showAlert("Error saving mood");
+      window.Telegram?.WebApp.showAlert("Ошибка при сохранении");
     } finally {
       setIsSubmitting(false);
     }
@@ -60,10 +60,10 @@ export default function Diary() {
 
   return (
     <div>
-      <h1>Mood Diary</h1>
+      <h1>Дневник настроения</h1>
 
       <div className="card">
-        <h2>How are you feeling today?</h2>
+        <h2>Как вы себя чувствуете сегодня?</h2>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
           {[1,2,3,4,5].map(val => (
             <button 
@@ -85,7 +85,7 @@ export default function Diary() {
         </div>
         
         <textarea 
-          placeholder="Why do you feel this way? (optional)" 
+          placeholder="Почему вы так себя чувствуете? (необязательно)" 
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
@@ -93,18 +93,18 @@ export default function Diary() {
         
         <button className="btn" onClick={handleSubmit} disabled={isSubmitting}>
           <Send size={20} style={{ marginRight: '8px' }}/>
-          Save Entry
+          Сохранить дневник
         </button>
       </div>
 
-      <h2>Past Entries</h2>
-      {entries.length === 0 && <p>No entries yet.</p>}
+      <h2>Прошлые записи</h2>
+      {entries.length === 0 && <p>Пока нет записей.</p>}
       {entries.map(entry => (
         <div key={entry.id} className="card" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <div style={{ fontSize: '32px' }}>{getEmojiForMood(entry.mood)}</div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--hint-color)' }}>
-              {entry.date ? entry.date.toDate().toLocaleString() : 'Just now'}
+              {entry.date ? entry.date.toDate().toLocaleString() : 'Только что'}
             </div>
             {entry.comment && <div style={{ marginTop: '4px' }}>{entry.comment}</div>}
           </div>

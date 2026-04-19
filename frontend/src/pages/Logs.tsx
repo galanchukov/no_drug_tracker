@@ -52,26 +52,26 @@ export default function Logs() {
       setAmount(1);
     } catch (e) {
       console.error(e);
-      window.Telegram?.WebApp.showAlert("Error saving log");
+      window.Telegram?.WebApp.showAlert("Ошибка при сохранении");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const getHabitTitle = (id: string) => {
-    return habits.find(h => h.id === id)?.title || "Unknown Habit";
+    return habits.find(h => h.id === id)?.title || "Неизвестная привычка";
   };
 
   return (
     <div>
-      <h1>Activity Tracker</h1>
+      <h1>Журнал активностей</h1>
 
       <div className="card">
-        <h2>Log Substance/Action</h2>
-        <p style={{ marginBottom: '16px' }}>Track instances without necessarily resetting your streak (e.g. tracking how many cigarettes while reducing).</p>
+        <h2>Записать действие / дозу</h2>
+        <p style={{ marginBottom: '16px' }}>Отслеживайте потребление в процессе контроля (например, сколько раз курили, если пытаетесь сократить).</p>
         
         {habits.length === 0 ? (
-          <p>Please create a habit first.</p>
+          <p>Пожалуйста, создайте привычку сначала.</p>
         ) : (
           <>
             <select 
@@ -92,21 +92,21 @@ export default function Logs() {
                 style={{ marginBottom: 0 }}
               />
               <button className="btn" style={{ width: 'auto' }} onClick={handleSubmit} disabled={isSubmitting}>
-                <Plus size={20} /> Add
+                <Plus size={20} /> Добавить
               </button>
             </div>
           </>
         )}
       </div>
 
-      <h2>Recent Logs</h2>
-      {logs.length === 0 && <p>No logs yet.</p>}
+      <h2>Недавние логи</h2>
+      {logs.length === 0 && <p>Пока нет логов.</p>}
       {logs.map(log => (
         <div key={log.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{getHabitTitle(log.habitId)}</div>
             <div style={{ fontSize: '12px', color: 'var(--hint-color)' }}>
-              {log.date ? log.date.toDate().toLocaleString() : 'Just now'}
+              {log.date ? log.date.toDate().toLocaleString() : 'Только что'}
             </div>
           </div>
           <div style={{ fontSize: '20px', fontWeight: 'bold' }}>

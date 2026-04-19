@@ -22,15 +22,15 @@ function BottomNav() {
     <nav className="bottom-nav">
       <Link to="/" className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
         <ListTodo size={24} />
-        <span>Habits</span>
+        <span>Привычки</span>
       </Link>
       <Link to="/diary" className={`nav-item ${location.pathname === '/diary' ? 'active' : ''}`}>
         <BookOpen size={24} />
-        <span>Diary</span>
+        <span>Дневник</span>
       </Link>
       <Link to="/logs" className={`nav-item ${location.pathname === '/logs' ? 'active' : ''}`}>
         <Activity size={24} />
-        <span>Logs</span>
+        <span>Срывы</span>
       </Link>
     </nav>
   );
@@ -56,7 +56,7 @@ function App() {
         const cred = await signInAnonymously(auth);
         const uid = cred.user.uid;
         
-        let targetUsername = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Anonymous";
+        let targetUsername = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Аноним";
 
         const userRef = doc(db, "users", uid);
         const userDoc = await getDoc(userRef);
@@ -88,13 +88,27 @@ function App() {
       if (!userAuth) {
         authenticate();
       } else {
-        getDoc(doc(db, "users", userAuth.uid)).then(docSnap => {
+        getDoc(doc(db, "users", userAuth.uid)).then(async docSnap => {
           if (docSnap.exists()) {
              setUser({
                uid: docSnap.data().uid,
                username: docSnap.data().username,
                createdAt: docSnap.data().createdAt,
                achievements: docSnap.data().achievements || []
+             });
+          } else {
+             let targetUsername = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Аноним";
+             await setDoc(doc(db, "users", userAuth.uid), {
+                uid: userAuth.uid,
+                username: targetUsername,
+                createdAt: serverTimestamp(),
+                achievements: []
+             });
+             setUser({
+               uid: userAuth.uid,
+               username: targetUsername,
+               createdAt: new Date(),
+               achievements: []
              });
           }
           setLoading(false);
@@ -110,7 +124,7 @@ function App() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: 16 }}>
         <LoaderCircle size={48} className="animate-fade" color="var(--button-color)" style={{ animation: 'spin 2s linear infinite' }} />
-        <p>Loading your space...</p>
+        <p>Загрузка данных...</p>
       </div>
     );
   }

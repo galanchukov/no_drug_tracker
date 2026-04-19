@@ -40,7 +40,7 @@ export default function Home() {
       setNewTitle("");
     } catch (e) {
       console.error(e);
-      window.Telegram?.WebApp.showAlert("Error creating habit");
+      window.Telegram?.WebApp.showAlert("Ошибка при создании");
     } finally {
       setIsCreating(false);
     }
@@ -54,14 +54,14 @@ export default function Home() {
 
   return (
     <div>
-      <h1>My Habits</h1>
+      <h1>Мои привычки</h1>
       
       <div className="card">
-        <h2>Add Habit</h2>
+        <h2>Добавить привычку</h2>
         <div style={{ display: 'flex', gap: '8px' }}>
           <input 
             type="text" 
-            placeholder="e.g. Smoking, Sugar..." 
+            placeholder="Напр. Сладкое, Курение..." 
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             style={{ marginBottom: 0 }}
@@ -73,19 +73,19 @@ export default function Home() {
       </div>
 
       <div style={{ marginTop: '24px' }}>
-        {habits.length === 0 && <p>You have no habits tracked yet. Add one above!</p>}
+        {habits.length === 0 && <p>У вас пока нет привычек. Добавьте первую сверху!</p>}
         {habits.map((habit) => (
           <Link key={habit.id} to={`/habit/${habit.id}`}>
             <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ fontSize: '18px', marginBottom: '4px' }}>{habit.title}</h3>
-                <span className="badge">Best: {habit.bestStreak}d</span>
+                <span className="badge">Рекорд: {habit.bestStreak} дн.</span>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
                   {getDaysStreak(habit.startDate)}
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--hint-color)' }}>Days</div>
+                <div style={{ fontSize: '12px', color: 'var(--hint-color)' }}>Дней</div>
               </div>
             </div>
           </Link>
