@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { doc, onSnapshot, runTransaction, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../api/firebase";
 import { useAppStore } from "../store/useAppStore";
-import { Habit } from "../types";
+import type { Habit } from "../types";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 export default function HabitDetail() {

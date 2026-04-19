@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-do
 import { signInAnonymously } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { ListTodo, BookOpen, Activity, LoaderCircle } from "lucide-react";
-import { app, auth, db } from "./api/firebase";
+import { auth, db } from "./api/firebase";
 import { useAppStore } from "./store/useAppStore";
 import "./index.css";
 
