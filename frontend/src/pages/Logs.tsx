@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../api/firebase";
 import { useAppStore } from "../store/useAppStore";
-import type { ActivityLog, Habit } from "../types";
+import type { ActivityLog } from "../types";
 import { Plus } from "lucide-react";
 
 export default function Logs() {

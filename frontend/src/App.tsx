@@ -37,7 +37,7 @@ function BottomNav() {
 }
 
 function App() {
-  const { user, setUser, setLoading, isLoading } = useAppStore();
+  const { setUser, setLoading, isLoading } = useAppStore();
 
   useEffect(() => {
     if (tg) {
