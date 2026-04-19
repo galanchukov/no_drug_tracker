@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting & Functions
+name: Deploy to Firebase Hosting
 
 on:
   push:
@@ -10,26 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      # --- BACKEND (Cloud Functions) ---
-      - name: Setup Node for Backend
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: functions/package-lock.json
-
-      - name: Install Backend Deps
-        run: npm ci
-        working-directory: ./functions
-
-      - name: Lint Backend
-        run: npm run lint
-        working-directory: ./functions
-
-      - name: Build Backend
-        run: npm run build
-        working-directory: ./functions
 
       # --- FRONTEND ---
       - name: Setup Node for Frontend

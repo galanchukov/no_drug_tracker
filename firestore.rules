@@ -8,36 +8,34 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // User can read their own data. Only cloud functions can write.
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if false;
+      // User can read and write their own data now.
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     match /habits/{habitId} {
-      // User can read their habits. Writes strictly go through Cloud Functions
-      // to avoid manual manipulation of the streak.
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow write: if false;
+      // Allow user to write to their habits
+      allow read, write: if request.auth != null 
+                        && (resource == null || resource.data.userId == request.auth.uid)
+                        && (request.resource == null || request.resource.data.userId == request.auth.uid);
     }
 
     match /relapses/{relapseId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow write: if false;
+      allow read, write: if request.auth != null 
+                        && (resource == null || resource.data.userId == request.auth.uid)
+                        && (request.resource == null || request.resource.data.userId == request.auth.uid);
     }
 
     match /mood_entries/{entryId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null 
-                    && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.mood >= 1 
-                    && request.resource.data.mood <= 5;
-      allow update, delete: if false; // Once logged, it's immutable for simplicity, or modify logic if needed
+      allow read, create: if request.auth != null 
+                        && (resource == null || resource.data.userId == request.auth.uid)
+                        && (request.resource == null || request.resource.data.userId == request.auth.uid);
+      allow update, delete: if false; 
     }
 
     match /activity_logs/{logId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null 
-                    && request.resource.data.userId == request.auth.uid;
+      allow read, create: if request.auth != null 
+                        && (resource == null || resource.data.userId == request.auth.uid)
+                        && (request.resource == null || request.resource.data.userId == request.auth.uid);
       allow update, delete: if false;
     }
   }

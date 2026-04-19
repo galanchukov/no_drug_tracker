@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, onSnapshot } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { db, functions } from "../api/firebase";
+import { doc, onSnapshot, runTransaction, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../api/firebase";
+import { useAppStore } from "../store/useAppStore";
 import { Habit } from "../types";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 export default function HabitDetail() {
+  const { user } = useAppStore();
   const { habitId } = useParams<{ habitId: string }>();
   const navigate = useNavigate();
   const [habit, setHabit] = useState<Habit | null>(null);
@@ -24,12 +25,37 @@ export default function HabitDetail() {
   }, [habitId]);
 
   const handleRelapse = async () => {
+    if (!user || !habitId) return;
     window.Telegram?.WebApp.showConfirm("Are you sure you want to reset your streak?", async (confirmed: boolean) => {
       if (confirmed) {
         setIsRelapsing(true);
         try {
-          const reportRelapse = httpsCallable(functions, "reportRelapse");
-          await reportRelapse({ habitId, reason });
+          await runTransaction(db, async (transaction) => {
+            const habitRef = doc(db, "habits", habitId);
+            const habitDoc = await transaction.get(habitRef);
+            
+            if (!habitDoc.exists()) throw new Error("Habit not found");
+            const habitData = habitDoc.data();
+            
+            const currentStreakCount = Math.floor(Math.abs(new Date().getTime() - habitData.startDate.toDate().getTime()) / (1000 * 60 * 60 * 24));
+            const newBestStreak = Math.max(currentStreakCount, habitData.bestStreak || 0);
+
+            transaction.update(habitRef, {
+              startDate: serverTimestamp(),
+              bestStreak: newBestStreak,
+              currentStreak: 0,
+              totalRelapses: (habitData.totalRelapses || 0) + 1
+            });
+
+            const relapseRef = doc(collection(db, "relapses"));
+            transaction.set(relapseRef, {
+              userId: user.uid,
+              habitId,
+              date: serverTimestamp(),
+              reason: reason || ""
+            });
+          });
+
           setReason("");
           window.Telegram?.WebApp.showAlert("Streak reset. Keep your head up!");
         } catch (e) {

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { db, functions, auth } from "../api/firebase";
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../api/firebase";
 import { useAppStore } from "../store/useAppStore";
 import { Habit } from "../types";
 import { Plus } from "lucide-react";
@@ -26,11 +25,18 @@ export default function Home() {
   }, [user, setHabits]);
 
   const handleCreate = async () => {
-    if (!newTitle.trim()) return;
+    if (!newTitle.trim() || !user) return;
     setIsCreating(true);
     try {
-      const createHabit = httpsCallable(functions, "createHabit");
-      await createHabit({ title: newTitle });
+      await addDoc(collection(db, "habits"), {
+        userId: user.uid,
+        title: newTitle.trim(),
+        startDate: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        currentStreak: 0,
+        bestStreak: 0,
+        totalRelapses: 0
+      });
       setNewTitle("");
     } catch (e) {
       console.error(e);

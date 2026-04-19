@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
-import { signInWithCustomToken } from "firebase/auth";
-import { httpsCallable } from "firebase/functions";
+import { signInAnonymously } from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { ListTodo, BookOpen, Activity, LoaderCircle } from "lucide-react";
-import { app, auth, functions } from "./api/firebase";
+import { app, auth, db } from "./api/firebase";
 import { useAppStore } from "./store/useAppStore";
 import "./index.css";
 
@@ -53,43 +53,57 @@ function App() {
 
     const authenticate = async () => {
       try {
-        const initData = tg?.initData || "";
+        const cred = await signInAnonymously(auth);
+        const uid = cred.user.uid;
         
-        if (!initData && import.meta.env.MODE === "development") {
-          // Dev mock fallback - replace in production if needed, or enforce Telegram only
-          console.warn("Running in dev mode without Telegram context.");
-          setLoading(false);
-          return;
-        }
+        let targetUsername = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Anonymous";
 
-        const authWithTelegram = httpsCallable(functions, 'authWithTelegram');
-        const result = await authWithTelegram({ initData });
-        const { customToken, uid } = result.data as { customToken: string, uid: string };
+        const userRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userRef);
+
+        if (!userDoc.exists()) {
+          await setDoc(userRef, {
+            uid: uid,
+            username: targetUsername,
+            createdAt: serverTimestamp(),
+            achievements: []
+          });
+        }
         
-        await signInWithCustomToken(auth, customToken);
-        
-        // Listen to auth state and fetch user profile
-        auth.onAuthStateChanged((user) => {
-          if (user) {
-            setUser({
-              uid: user.uid,
-              username: tg?.initDataUnsafe?.user?.username || "User",
-              createdAt: new Date(),
-              achievements: []
-            });
-          } else {
-            setUser(null);
-          }
-          setLoading(false);
+        setUser({
+          uid: uid,
+          username: targetUsername,
+          createdAt: new Date(),
+          achievements: []
         });
 
       } catch (error) {
         console.error("Auth failed:", error);
+      } finally {
         setLoading(false);
       }
     };
 
-    authenticate();
+    auth.onAuthStateChanged((userAuth) => {
+      if (!userAuth) {
+        authenticate();
+      } else {
+        getDoc(doc(db, "users", userAuth.uid)).then(docSnap => {
+          if (docSnap.exists()) {
+             setUser({
+               uid: docSnap.data().uid,
+               username: docSnap.data().username,
+               createdAt: docSnap.data().createdAt,
+               achievements: docSnap.data().achievements || []
+             });
+          }
+          setLoading(false);
+        }).catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
+      }
+    });
   }, []);
 
   if (isLoading) {
