@@ -104,7 +104,7 @@ export default function Diary() {
           <div style={{ fontSize: '32px' }}>{getEmojiForMood(entry.mood)}</div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--hint-color)' }}>
-              {entry.date ? entry.date.toDate().toLocaleString() : 'Только что'}
+              {entry.date ? entry.date.toDate().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : 'Только что'}
             </div>
             {entry.comment && <div style={{ marginTop: '4px' }}>{entry.comment}</div>}
           </div>

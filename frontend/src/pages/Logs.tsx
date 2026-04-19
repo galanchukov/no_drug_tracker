@@ -106,7 +106,7 @@ export default function Logs() {
           <div>
             <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{getHabitTitle(log.habitId)}</div>
             <div style={{ fontSize: '12px', color: 'var(--hint-color)' }}>
-              {log.date ? log.date.toDate().toLocaleString() : 'Только что'}
+              {log.date ? log.date.toDate().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : 'Только что'}
             </div>
           </div>
           <div style={{ fontSize: '20px', fontWeight: 'bold' }}>

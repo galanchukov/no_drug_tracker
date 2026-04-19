@@ -85,6 +85,10 @@ export default function HabitDetail() {
         <div className="number">{currentStreak}</div>
         <div className="label">Дней</div>
       </div>
+      
+      <div style={{ textAlign: 'center', marginBottom: '24px', fontSize: '14px', color: 'var(--hint-color)' }}>
+        Счетчик запущен: {habit.startDate ? habit.startDate.toDate().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Только что'}
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
         <div className="card" style={{ textAlign: 'center' }}>
