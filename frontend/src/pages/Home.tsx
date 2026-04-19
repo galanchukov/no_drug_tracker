@@ -1,0 +1,90 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { db, functions, auth } from "../api/firebase";
+import { useAppStore } from "../store/useAppStore";
+import { Habit } from "../types";
+import { Plus } from "lucide-react";
+
+export default function Home() {
+  const { user, habits, setHabits } = useAppStore();
+  const [isCreating, setIsCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, "habits"), where("userId", "==", user.uid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedHabits: Habit[] = [];
+      snapshot.forEach((doc) => {
+        fetchedHabits.push({ id: doc.id, ...doc.data() } as Habit);
+      });
+      setHabits(fetchedHabits);
+    });
+    return () => unsubscribe();
+  }, [user, setHabits]);
+
+  const handleCreate = async () => {
+    if (!newTitle.trim()) return;
+    setIsCreating(true);
+    try {
+      const createHabit = httpsCallable(functions, "createHabit");
+      await createHabit({ title: newTitle });
+      setNewTitle("");
+    } catch (e) {
+      console.error(e);
+      window.Telegram?.WebApp.showAlert("Error creating habit");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const getDaysStreak = (startDate: any) => {
+    if (!startDate) return 0;
+    const diff = Math.abs(new Date().getTime() - startDate.toDate().getTime());
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  };
+
+  return (
+    <div>
+      <h1>My Habits</h1>
+      
+      <div className="card">
+        <h2>Add Habit</h2>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <input 
+            type="text" 
+            placeholder="e.g. Smoking, Sugar..." 
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            style={{ marginBottom: 0 }}
+          />
+          <button className="btn" style={{ width: 'auto' }} onClick={handleCreate} disabled={isCreating}>
+            <Plus size={20} />
+          </button>
+        </div>
+      </div>
+
+      <div style={{ marginTop: '24px' }}>
+        {habits.length === 0 && <p>You have no habits tracked yet. Add one above!</p>}
+        {habits.map((habit) => (
+          <Link key={habit.id} to={`/habit/${habit.id}`}>
+            <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ fontSize: '18px', marginBottom: '4px' }}>{habit.title}</h3>
+                <span className="badge">Best: {habit.bestStreak}d</span>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                  {getDaysStreak(habit.startDate)}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--hint-color)' }}>Days</div>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

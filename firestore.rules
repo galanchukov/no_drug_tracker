@@ -1,0 +1,44 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only authenticated users can access the database.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /users/{userId} {
+      // User can read their own data. Only cloud functions can write.
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    match /habits/{habitId} {
+      // User can read their habits. Writes strictly go through Cloud Functions
+      // to avoid manual manipulation of the streak.
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /relapses/{relapseId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /mood_entries/{entryId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null 
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.mood >= 1 
+                    && request.resource.data.mood <= 5;
+      allow update, delete: if false; // Once logged, it's immutable for simplicity, or modify logic if needed
+    }
+
+    match /activity_logs/{logId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null 
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+  }
+}

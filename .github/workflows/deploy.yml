@@ -1,0 +1,57 @@
+name: Deploy to Firebase Hosting & Functions
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # --- BACKEND (Cloud Functions) ---
+      - name: Setup Node for Backend
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install Backend Deps
+        run: npm ci
+        working-directory: ./functions
+
+      - name: Lint Backend
+        run: npm run lint
+        working-directory: ./functions
+
+      - name: Build Backend
+        run: npm run build
+        working-directory: ./functions
+
+      # --- FRONTEND ---
+      - name: Setup Node for Frontend
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Deps
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Build Frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      # --- DEPLOYMENT ---
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_YOUR_PROJECT }}'
+          projectId: your-project-id
+          channelId: live
