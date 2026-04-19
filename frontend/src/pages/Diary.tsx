@@ -6,11 +6,14 @@ import type { MoodEntry } from "../types";
 import { Send, Trash2, Edit } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const PREDEFINED_TAGS = ["Семья", "Работа", "Стресс", "Скука", "Тусовка", "Усталость", "Одиночество", "Болезнь", "Достижение"];
+
 export default function Diary() {
   const { user } = useAppStore();
   const [entries, setEntries] = useState<MoodEntry[]>([]);
   const [mood, setMood] = useState<number>(3);
   const [comment, setComment] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editComment, setEditComment] = useState("");
@@ -42,16 +45,27 @@ export default function Diary() {
         userId: user.uid,
         mood,
         comment,
+        tags: selectedTags,
         date: serverTimestamp()
       });
       setComment("");
       setMood(3);
+      setSelectedTags([]);
       window.Telegram?.WebApp.HapticFeedback.notificationOccurred("success");
     } catch (e) {
       console.error(e);
       window.Telegram?.WebApp.showAlert("Ошибка при сохранении");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const toggleTag = (tag: string) => {
+    window.Telegram?.WebApp.HapticFeedback.selectionChanged();
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
     }
   };
 
@@ -85,9 +99,9 @@ export default function Diary() {
     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
       <h1>Дневник настроения</h1>
 
-      <div className="card">
+      <div className="card glass">
         <h2>Как вы себя чувствуете сегодня?</h2>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
           {[1,2,3,4,5].map(val => (
             <motion.button 
               key={val} 
@@ -97,13 +111,14 @@ export default function Diary() {
                 window.Telegram?.WebApp.HapticFeedback.selectionChanged();
               }}
               style={{
-                fontSize: '32px', 
+                fontSize: '36px', 
                 background: 'none', 
                 border: 'none', 
                 cursor: 'pointer',
-                opacity: mood === val ? 1 : 0.4,
+                opacity: mood === val ? 1 : 0.3,
                 transform: mood === val ? 'scale(1.2)' : 'scale(1)',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                textShadow: mood === val ? '0 0 10px rgba(255,255,255,0.5)' : 'none'
               }}
             >
               {getEmojiForMood(val)}
@@ -111,11 +126,24 @@ export default function Diary() {
           ))}
         </div>
         
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+          {PREDEFINED_TAGS.map(t => (
+            <button 
+              key={t} 
+              className={`tag-btn ${selectedTags.includes(t) ? 'active' : ''}`}
+              onClick={() => toggleTag(t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
         <textarea 
           placeholder="Почему вы так себя чувствуете? Запишите свои мысли..." 
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
+          style={{ background: 'rgba(255,255,255,0.05)' }}
         />
         
         <motion.button whileTap={{ scale: 0.95 }} className="btn" onClick={handleSubmit} disabled={isSubmitting}>
@@ -155,6 +183,14 @@ export default function Diary() {
                 </div>
               </div>
               
+              {entry.tags && entry.tags.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                  {entry.tags.map(t => (
+                    <span key={t} style={{ fontSize: 10, background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: 8, color: 'var(--hint-color)' }}>{t}</span>
+                  ))}
+                </div>
+              )}
+
               {editingId === entry.id ? (
                 <div style={{ marginTop: 8 }}>
                   <textarea value={editComment} onChange={e => setEditComment(e.target.value)} rows={2} style={{ marginBottom: 8 }} />

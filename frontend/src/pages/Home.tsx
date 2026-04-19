@@ -142,27 +142,46 @@ export default function Home() {
 
       <div style={{ marginTop: '24px' }}>
         {habits.length === 0 && <p>У вас пока нет целей. Добавьте первую сверху!</p>}
-        {habits.map((habit, index) => (
-          <motion.div key={habit.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-            <Link to={`/habit/${habit.id}`}>
-              <motion.div whileTap={{ scale: 0.98 }} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: habit.color || 'var(--secondary-bg)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {habit.icon && <span style={{ fontSize: '32px' }}>{habit.icon}</span>}
-                  <div>
-                    <h3 style={{ fontSize: '18px', marginBottom: '4px', color: habit.color !== 'var(--secondary-bg)' ? '#fff' : 'inherit' }}>{habit.title}</h3>
-                    <span className="badge" style={{ backgroundColor: 'rgba(0,0,0,0.2)', color: habit.color !== 'var(--secondary-bg)' ? '#fff' : 'inherit' }}>Рекорд: {habit.bestStreak} дн.</span>
+        {habits.map((habit, index) => {
+          const currentStreak = getDaysStreak(habit.startDate);
+          // Calculate next milestone
+          const milestones = [3, 7, 21, 90, 365, 1000];
+          let nextMilestone = milestones.find(m => m > currentStreak) || 1000;
+          let progress = (currentStreak / nextMilestone) * 100;
+
+          return (
+            <motion.div key={habit.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+              <Link to={`/habit/${habit.id}`}>
+                <motion.div whileTap={{ scale: 0.98 }} className="card glass" style={{ backgroundColor: habit.color || 'var(--secondary-bg)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      {habit.icon && <span style={{ fontSize: '32px' }}>{habit.icon}</span>}
+                      <div>
+                        <h3 style={{ fontSize: '18px', marginBottom: '4px', color: habit.color !== 'var(--secondary-bg)' ? '#fff' : 'inherit' }}>{habit.title}</h3>
+                        <span className="badge" style={{ backgroundColor: 'rgba(0,0,0,0.2)', color: habit.color !== 'var(--secondary-bg)' ? '#fff' : 'inherit' }}>Рекорд: {habit.bestStreak} дн.</span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', color: habit.color !== 'var(--secondary-bg)' ? '#fff' : 'inherit' }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                        {currentStreak}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: 0.8 }}>Дней</div>
+                    </div>
                   </div>
-                </div>
-                <div style={{ textAlign: 'right', color: habit.color !== 'var(--secondary-bg)' ? '#fff' : 'inherit' }}>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
-                    {getDaysStreak(habit.startDate)}
+                  
+                  {/* Progress to milestone */}
+                  <div style={{ color: habit.color !== 'var(--secondary-bg)' ? 'rgba(255,255,255,0.8)' : 'var(--hint-color)', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Цель: {nextMilestone} дн.</span>
+                    <span>{progress.toFixed(0)}%</span>
                   </div>
-                  <div style={{ fontSize: '12px', opacity: 0.8 }}>Дней</div>
-                </div>
-              </motion.div>
-            </Link>
-          </motion.div>
-        ))}
+                  <div className="progress-container" style={{ background: habit.color !== 'var(--secondary-bg)' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)' }}>
+                    <div className="progress-bar" style={{ width: `${progress}%`, background: habit.color !== 'var(--secondary-bg)' ? '#fff' : 'var(--button-color)' }} />
+                  </div>
+                </motion.div>
+              </Link>
+            </motion.div>
+          )
+        })}
       </div>
     </motion.div>
   );

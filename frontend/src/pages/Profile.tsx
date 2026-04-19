@@ -56,6 +56,14 @@ export default function Profile() {
     });
   };
 
+  const getRankName = (level: number) => {
+    if (level <= 3) return "🌿 Новичок";
+    if (level <= 10) return "⚔️ Боец";
+    if (level <= 20) return "🛡️ Рыцарь";
+    if (level <= 50) return "🧘‍♂️ Мастер";
+    return "🌌 Просветленный";
+  };
+
   const getBadges = () => {
     let badges = [];
     const maxStreak = Math.max(...habits.map(h => h.bestStreak || 0), 0);
@@ -107,7 +115,7 @@ export default function Profile() {
         )}
         
         <p style={{ color: 'var(--hint-color)', fontSize: '14px', margin: '0 0 16px 0' }}>
-          Уровень {currentLevel} • {xpAmount} XP
+          Уровень {currentLevel} ({getRankName(currentLevel)}) • {xpAmount} XP
         </p>
 
         <div style={{ width: '100%', height: '8px', background: 'var(--secondary-bg)', borderRadius: '4px', overflow: 'hidden' }}>
