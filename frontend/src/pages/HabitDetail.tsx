@@ -6,6 +6,7 @@ import { useAppStore } from "../store/useAppStore";
 import type { Habit } from "../types";
 import { ArrowLeft, AlertTriangle, Trash2, Edit, Wind } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSosAudio } from "../hooks/useSosAudio";
 
 const MOTIVATION_QUOTES = [
   "Каждая слабость сейчас — это шаг назад от той жизни, которую ты заслуживаешь.",
@@ -26,6 +27,7 @@ export default function HabitDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [showSos, setShowSos] = useState(false);
   const [sosQuote, setSosQuote] = useState("");
+  const { start: startSosAudio, stop: stopSosAudio } = useSosAudio();
   
   // Edit states
   const [editTitle, setEditTitle] = useState("");
@@ -34,8 +36,15 @@ export default function HabitDetail() {
   useEffect(() => {
     if (showSos) {
       setSosQuote(MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]);
+      // Запускаем успокаивающий ambient-звук
+      startSosAudio();
+      // Тактильная обратная связь Telegram
+      window.Telegram?.WebApp.HapticFeedback.impactOccurred("heavy");
+    } else {
+      // Плавно останавливаем звук при закрытии
+      stopSosAudio();
     }
-  }, [showSos]);
+  }, [showSos, startSosAudio, stopSosAudio]);
 
   useEffect(() => {
     if (!habitId) return;
@@ -122,6 +131,7 @@ export default function HabitDetail() {
           setReason("");
           window.Telegram?.WebApp.HapticFeedback.notificationOccurred("warning");
           window.Telegram?.WebApp.showAlert("Счетчик сброшен. Важен не срыв, а то, что вы продолжаете пытаться!");
+          stopSosAudio();
           setShowSos(false);
         } catch (e) {
           console.error(e);
